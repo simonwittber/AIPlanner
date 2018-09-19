@@ -14,21 +14,23 @@ namespace uHTNP.Tests
         {
             using (var domain = Domain.New())
             {
-                DefinePrimitive("P1")
+                DefinePrimitiveTask("P1")
                     .Conditions("P1C1", "P1C2")
-                    .Actions("P1A1", "P1A2")
+                    .Actions("P1A1")
                     .Set("X")
                     .Unset("Y");
 
-                DefinePrimitive("P2")
-                    .Actions("P1A1", "P2A2")
+                DefinePrimitiveTask("P2")
+                    .Actions("P1A2")
                     .Set("X")
                     .Unset("B");
 
-                DefineCompound("C1")
-                    .Conditions("C1C1")
+                DefineCompoundTask("C1")
+                    .AddMethod("CT1")
+                        .Conditions("C1C1")
                         .Tasks("P1", "P2")
-                    .Conditions("C1C2")
+                    .AddMethod("CT2")
+                        .Conditions("C1C2")
                         .Tasks("P1");
 
                 SetRootTask("C1");
@@ -39,7 +41,7 @@ namespace uHTNP.Tests
 
 
         [Fact]
-        public void SimpleHTNPTestsSimplePasses()
+        public void TestPlanner()
         {
             var d = CreateDomain();
             Assert.Equal(d.root, d.tasks["C1"]);
@@ -54,5 +56,38 @@ namespace uHTNP.Tests
             Assert.Collection(plan, (A) => Assert.Equal("P1", A.name));
         }
 
+        [Fact]
+        public void TestDomainGraph()
+        {
+            var d = CreateDomain();
+            Assert.Contains(d.preconditions, A => A.Key == "P1C1");
+            Assert.Contains(d.preconditions, A => A.Key == "P1C2");
+            Assert.Contains(d.preconditions, A => A.Key == "C1C1");
+            Assert.Contains(d.preconditions, A => A.Key == "C1C2");
+
+            Assert.Contains(d.actions, A => A.Key == "P1A1");
+            Assert.Contains(d.actions, A => A.Key == "P1A2");
+
+            Assert.Contains(d.tasks, A => A.Key == "P1");
+            Assert.Contains(d.tasks, A => A.Key == "P2");
+            Assert.Contains(d.tasks, A => A.Key == "C1");
+        }
+
+        [Fact]
+        public void TestActionEffects()
+        {
+            var d = CreateDomain();
+            var state = new WorldState();
+            state.Set("C1C2", true);
+            state.Set("P1C1", true);
+            state.Set("P1C2", true);
+            var plan = Planner.CreatePlan(state, d);
+            var runner = new PlanRunner(plan);
+            runner.Execute(state);
+            Assert.Contains(state.states.Keys, A => A == "X");
+            Assert.Contains(state.states.Keys, A => A == "Y");
+            Assert.True(state.Get("X"));
+            Assert.False(state.Get("Y"));
+        }
     }
 }

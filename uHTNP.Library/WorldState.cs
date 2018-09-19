@@ -8,6 +8,13 @@ namespace uHTNP
     {
         public Dictionary<string, bool> states = new Dictionary<string, bool>();
 
+        public bool PreconditionsAreValid(List<Precondition> preconditions)
+        {
+            foreach (var p in preconditions)
+                if (!p.value == Get(p.name)) return false;
+            return true;
+        }
+
         public void ApplyEffects(List<Effect> effects)
         {
             foreach (var i in effects)

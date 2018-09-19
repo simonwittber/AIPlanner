@@ -10,10 +10,16 @@ namespace uHTNP.DSL
         public Domain domain;
         public List<Method> methods = new List<Method>();
 
+        public CompoundTask AddMethod(string name)
+        {
+            var m = new Method { name = name };
+            methods.Add(m);
+            return this;
+        }
+
         public CompoundTask Conditions(params string[] preconditions)
         {
-            var m = new Method();
-            methods.Add(m);
+            var m = methods.Last();
             m.preconditions.AddRange(from i in preconditions select domain.GetPrecondition(i));
             return this;
         }
@@ -35,7 +41,7 @@ namespace uHTNP.DSL
         {
             foreach (var m in methods)
             {
-                var valid = domain.PreconditionsAreValid(state, m.preconditions);
+                var valid = state.PreconditionsAreValid(m.preconditions);
                 if (valid) return m;
             }
             return null;

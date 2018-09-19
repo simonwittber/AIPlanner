@@ -8,7 +8,7 @@ namespace uHTNP
 {
     public static class Planner
     {
-        [ThreadStatic] static Stack<PlanState> history = new Stack<PlanState>();
+        [ThreadStatic] static readonly Stack<PlanState> history = new Stack<PlanState>();
 
         struct PlanState
         {
@@ -50,7 +50,7 @@ namespace uHTNP
                 else
                 {
                     var primitiveTask = task as PrimitiveTask;
-                    if (domain.PreconditionsAreValid(state, primitiveTask.preconditions))
+                    if (state.PreconditionsAreValid(primitiveTask.preconditions))
                     {
                         state.ApplyEffects(primitiveTask.effects);
                         plan.Add(primitiveTask);
@@ -80,7 +80,7 @@ namespace uHTNP
 
         static void SaveHistory(List<Task> taskQueue, List<PrimitiveTask> plan, WorldState state)
         {
-            history.Push(new PlanState() { queue = taskQueue.ToArray(), plan = plan.ToArray(), state = state.Copy() });
+            history.Push(new PlanState { queue = taskQueue.ToArray(), plan = plan.ToArray(), state = state.Copy() });
         }
     }
 }

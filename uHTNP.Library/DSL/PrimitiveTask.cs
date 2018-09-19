@@ -1,5 +1,3 @@
-
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -18,22 +16,21 @@ namespace uHTNP.DSL
             return this;
         }
 
-        public PrimitiveTask Actions(string actionName, params string[] paramNames)
+        public PrimitiveTask Actions(string actionName)
         {
             action = domain.GetAction(actionName);
-            action.arguments.AddRange(paramNames);
             return this;
         }
 
         public PrimitiveTask Set(string stateName)
         {
-            effects.Add(new Effect() { name = stateName, value = true });
+            effects.Add(new Effect { name = stateName, value = true });
             return this;
         }
 
         public PrimitiveTask Unset(string stateName)
         {
-            effects.Add(new Effect() { name = stateName, value = false });
+            effects.Add(new Effect { name = stateName, value = false });
             return this;
         }
     }

@@ -13,7 +13,7 @@ namespace uHTNP.DSL
         {
             Precondition precondition;
             if (!preconditions.TryGetValue(name, out precondition))
-                precondition = preconditions[name] = new Precondition() { name = name };
+                precondition = preconditions[name] = new Precondition { name = name };
             return precondition;
         }
 
@@ -21,13 +21,13 @@ namespace uHTNP.DSL
         {
             Action action;
             if (!actions.TryGetValue(name, out action))
-                action = actions[name] = new Action() { name = name };
+                action = actions[name] = new Action { name = name };
             return action;
         }
 
         public Task root;
 
-        static Domain active = null;
+        static Domain active;
 
         public static Domain New()
         {
@@ -36,35 +36,35 @@ namespace uHTNP.DSL
             return active;
         }
 
-        public static CompoundTask DefineCompound(string name)
+        public static CompoundTask DefineCompoundTask(string name)
         {
-            var t = new CompoundTask() { name = name, domain = active };
+            CheckInternalState();
+            var t = new CompoundTask { name = name, domain = active };
             active.tasks.Add(name, t);
             return t;
         }
 
-        public static PrimitiveTask DefinePrimitive(string name)
+        public static PrimitiveTask DefinePrimitiveTask(string name)
         {
-            var p = new PrimitiveTask() { name = name, domain = active };
+            CheckInternalState();
+            var p = new PrimitiveTask { name = name, domain = active };
             active.tasks.Add(name, p);
             return p;
         }
 
         public static void SetRootTask(string name)
         {
+            CheckInternalState();
             active.root = active.tasks[name];
-        }
-
-        public bool PreconditionsAreValid(WorldState state, List<Precondition> preconditions)
-        {
-            foreach (var p in preconditions)
-                if (!p.value == state.Get(p.name)) return false;
-            return true;
         }
 
         public void Dispose()
         {
             active = null;
+        }
+
+        static void CheckInternalState() {
+            if (active == null) throw new Exception("Must call Domain.New before using DSL methods.");
         }
     }
 }
