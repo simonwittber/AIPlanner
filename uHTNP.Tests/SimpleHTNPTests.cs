@@ -82,7 +82,7 @@ namespace uHTNP.Tests
             state.Set("P1C1", true);
             state.Set("P1C2", true);
             var plan = Planner.CreatePlan(state, d);
-            var runner = new PlanRunner(plan);
+            var runner = new PlanRunner(d, plan);
             runner.Execute(state);
             Assert.Contains(state.states.Keys, A => A == "X");
             Assert.Contains(state.states.Keys, A => A == "Y");

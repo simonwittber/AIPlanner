@@ -19,6 +19,7 @@ namespace uHTNP
 
         static public List<PrimitiveTask> CreatePlan(WorldState currentState, Domain domain)
         {
+            domain.UpdateWorldState(currentState);
             var taskQueue = new List<Task>();
             taskQueue.Add(domain.root);
             var plan = new List<PrimitiveTask>();

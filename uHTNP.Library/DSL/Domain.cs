@@ -8,6 +8,7 @@ namespace uHTNP.DSL
         public Dictionary<string, Task> tasks = new Dictionary<string, Task>();
         public Dictionary<string, Precondition> preconditions = new Dictionary<string, Precondition>();
         public Dictionary<string, Action> actions = new Dictionary<string, Action>();
+        public List<Sensor> sensors = new List<Sensor>();
 
         public Precondition GetPrecondition(string name)
         {
@@ -52,10 +53,24 @@ namespace uHTNP.DSL
             return p;
         }
 
+        public static Sensor DefineSensor(string name)
+        {
+            CheckInternalState();
+            var s = new Sensor { name = name };
+            active.sensors.Add(s);
+            return s;
+        }
+
         public static void SetRootTask(string name)
         {
             CheckInternalState();
             active.root = active.tasks[name];
+        }
+
+        public void UpdateWorldState(WorldState currentState)
+        {
+            foreach (var s in sensors)
+                s.sensorDelegate.Invoke(currentState);
         }
 
         public void Dispose()
@@ -63,7 +78,8 @@ namespace uHTNP.DSL
             active = null;
         }
 
-        static void CheckInternalState() {
+        static void CheckInternalState()
+        {
             if (active == null) throw new Exception("Must call Domain.New before using DSL methods.");
         }
     }

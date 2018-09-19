@@ -5,7 +5,8 @@ using uHTNP.DSL;
 
 namespace uHTNP
 {
-    public enum PlanState {
+    public enum PlanState
+    {
         Failed,
         InProgress,
         Completed
@@ -14,16 +15,22 @@ namespace uHTNP
     public class PlanRunner
     {
         readonly Queue<PrimitiveTask> tasks;
+        readonly Domain domain;
 
-        public PlanRunner(List<PrimitiveTask> plan)
+        public PlanRunner(Domain domain, List<PrimitiveTask> plan)
         {
             tasks = new Queue<PrimitiveTask>(plan);
+            this.domain = domain;
         }
 
-        public PlanState Execute(WorldState state) {
-            while(tasks.Count > 0) {
+        public PlanState Execute(WorldState state)
+        {
+            while (tasks.Count > 0)
+            {
                 var task = tasks.Dequeue();
-                switch(ExecuteTask(state, task)) {
+                domain.UpdateWorldState(state);
+                switch (ExecuteTask(state, task))
+                {
                     case ActionState.Error:
                         return PlanState.Failed;
                     case ActionState.InProgress:
@@ -35,11 +42,6 @@ namespace uHTNP
                 }
             }
             return PlanState.Completed;
-        }
-
-        IEnumerator Cor() {
-            yield return null;
-            yield return null;
         }
 
         ActionState ExecuteTask(WorldState state, PrimitiveTask task) => task.action.actionDelegate.Invoke(state);
