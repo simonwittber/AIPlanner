@@ -1,6 +1,6 @@
 ﻿namespace uHTNP.DSL
 {
-    public class Task
+    public abstract class Task
     {
         public string name = string.Empty;
     }

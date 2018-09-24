@@ -4,26 +4,16 @@ using System.Collections.Generic;
 
 namespace uHTNP.DSL
 {
+    /// <summary>
+    /// The Domain is a collection of tasks, conditions and actions that are 
+    /// used to create a plan based on world state.
+    /// </summary>
     public class Domain : IDisposable
     {
         internal Dictionary<string, Task> tasks = new Dictionary<string, Task>();
         internal Dictionary<string, Precondition> preconditions = new Dictionary<string, Precondition>();
         internal Dictionary<string, Action> actions = new Dictionary<string, Action>();
         internal List<Sensor> sensors = new List<Sensor>();
-
-        internal Precondition GetPrecondition(string name)
-        {
-            if (!preconditions.TryGetValue(name, out Precondition precondition))
-                precondition = preconditions[name] = new Precondition { name = name };
-            return precondition;
-        }
-
-        internal Action GetAction(string name)
-        {
-            if (!actions.TryGetValue(name, out Action action))
-                action = actions[name] = new Action { name = name };
-            return action;
-        }
 
         internal Task root;
 
@@ -109,6 +99,20 @@ namespace uHTNP.DSL
         public void Dispose()
         {
             active = null;
+        }
+
+        internal Precondition GetPrecondition(string name)
+        {
+            if (!preconditions.TryGetValue(name, out Precondition precondition))
+                precondition = preconditions[name] = new Precondition { name = name };
+            return precondition;
+        }
+
+        internal Action GetAction(string name)
+        {
+            if (!actions.TryGetValue(name, out Action action))
+                action = actions[name] = new Action { name = name };
+            return action;
         }
 
         static void CheckInternalState()

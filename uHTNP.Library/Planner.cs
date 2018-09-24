@@ -6,6 +6,10 @@ using uHTNP.DSL;
 
 namespace uHTNP
 {
+    /// <summary>
+    /// Planner is a static class used to create a plan (List of tasks) in a 
+    /// domain.
+    /// </summary>
     public static class Planner
     {
         [ThreadStatic] static readonly Stack<PlanState> history = new Stack<PlanState>();
@@ -17,11 +21,17 @@ namespace uHTNP
             public Task[] queue;
         }
 
+        /// <summary>
+        /// Creates the plan based on current world state. A plan is a list of
+        /// Primitive Tasks.
+        /// </summary>
+        /// <returns>The plan.</returns>
+        /// <param name="currentState">Current state.</param>
+        /// <param name="domain">Domain.</param>
         static public List<PrimitiveTask> CreatePlan(WorldState currentState, Domain domain)
         {
             domain.UpdateWorldState(currentState);
-            var taskQueue = new List<Task>();
-            taskQueue.Add(domain.root);
+            var taskQueue = new List<Task> { domain.root };
             var plan = new List<PrimitiveTask>();
             history.Clear();
             var state = currentState.Copy();

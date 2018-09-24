@@ -5,6 +5,10 @@ using System.Linq;
 
 namespace uHTNP.DSL
 {
+    /// <summary>
+    /// A Compound task is a list of Methods. At execute time, the appropriate
+    /// method is chosen based on world state and used to create a plan.
+    /// </summary>
     public class CompoundTask : Task
     {
         internal Domain domain;

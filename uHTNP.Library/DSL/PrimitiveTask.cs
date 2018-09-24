@@ -3,6 +3,10 @@ using System.Linq;
 
 namespace uHTNP.DSL
 {
+    /// <summary>
+    /// A primitive task is an action that is executed if preconditions are 
+    /// satisfied. It then applies it's effects to the world state.
+    /// </summary>
     public class PrimitiveTask : Task
     {
         internal Domain domain;

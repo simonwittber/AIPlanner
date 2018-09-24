@@ -12,6 +12,10 @@ namespace uHTNP
         Completed
     }
 
+    /// <summary>
+    /// The Plan Runner takes a plan (List of Primitive Tasks) and executes the
+    /// plan, checking preconditions and applying effects of actions as needed.
+    /// </summary>
     public class PlanRunner
     {
         readonly Queue<PrimitiveTask> tasks;
@@ -23,6 +27,11 @@ namespace uHTNP
             this.domain = domain;
         }
 
+        /// <summary>
+        /// Execute the plan, returning current plan state. If the PlanState is 
+        /// InProgress, Execute will need to be called again during the next
+        /// update tick.
+        /// </summary>
         public PlanState Execute(WorldState state)
         {
             while (tasks.Count > 0)
