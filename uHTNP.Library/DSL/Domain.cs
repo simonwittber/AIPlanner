@@ -6,7 +6,9 @@ namespace uHTNP.DSL
 {
     /// <summary>
     /// The Domain is a collection of tasks, conditions and actions that are 
-    /// used to create a plan based on world state.
+    /// used to create a plan based on world state. While domain instances do
+    /// not share state, the methods they are bound to (using Bind* calls) may,
+    /// so it is safer to create a new Domain instance for each actor.
     /// </summary>
     public class Domain : IDisposable
     {
