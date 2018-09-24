@@ -40,7 +40,8 @@ Define the BTN
 
 Bind Methods
 ------------
-This connects plan execute to your application.
+This connects plan execution into your application.
+Similar Bind methods exist for procedural preconditions and sensors.
 ```
     var d = CreateDomain();
     d.BindAction("PlayWalkAnimation", currentState =>
