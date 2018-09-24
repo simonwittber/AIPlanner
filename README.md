@@ -1,6 +1,8 @@
- uHTNP provides an DSL for defining a Hierarchial Task Network, which can be used to create a plan, which can then be executed. ##### Example:  This is the DSL used to define a BTN. 
+ uHTNP provides:
+ - A C# DSL for defining a Hierarchial Task Network.
+ - A planner which can use the network to create a plan.
+ - A runner which will execute the plan.
 
-######  code
 
 ```
     using (var domain = Domain.New())
