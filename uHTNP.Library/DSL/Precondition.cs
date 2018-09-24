@@ -4,7 +4,7 @@ namespace uHTNP.DSL
 {
     /// <summary>
     /// A Precondition maps a a state that must be satisfied, as well as an
-    /// optional Func<bool> which must return true.
+    /// optional func which must return true for the condition to succeed.
     /// </summary>
     public class Precondition
     {
@@ -22,6 +22,6 @@ namespace uHTNP.DSL
         /// The optional procedural precondition that can return true to satisfy
         /// the precondition.
         /// </summary>
-        public Func<bool> proceduralPrecondition = null;
+        public Func<bool> proceduralPrecondition;
     }
 }

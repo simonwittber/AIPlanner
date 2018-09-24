@@ -1,6 +1,6 @@
 namespace uHTNP.DSL
 {
-    internal class TaskReference
+    class TaskReference
     {
         public string name;
 
