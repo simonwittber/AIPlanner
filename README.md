@@ -3,7 +3,8 @@
  - A planner which can use the network to create a plan.
  - A runner which will execute the plan.
 
-
+Define the BTN
+--------------
 ```
     using (var domain = Domain.New())
     {
@@ -23,7 +24,6 @@
             .Set("PlayerDead")
             .Unset("PlayerIsVisible");
 
-
         DefineCompoundTask("BeAnEnemy")
             .DefineMethod("FindPlayer")
                 .Conditions("PlayerNotVisible")
@@ -36,4 +36,30 @@
 
         return domain;
     }
+```
+
+Bind Methods
+------------
+This connects plan execute to your application.
+```
+    var d = CreateDomain();
+    d.BindAction("PlayWalkAnimation", currentState =>
+    {
+        return ActionState.Success;
+    });
+```
+
+Create a Plan
+-------------
+```
+    var state = new WorldState();
+    state.Set("PlayerNotVisible", true);
+    var plan = Planner.CreatePlan(state, d);
+```
+
+Execute the Plan
+----------------
+```
+    var runner = new PlanRunner(d, plan);
+    var planState = runner.Execute(state);
 ```
