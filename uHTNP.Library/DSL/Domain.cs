@@ -1,35 +1,39 @@
 using System;
 using System.Collections.Generic;
 
+
 namespace uHTNP.DSL
 {
     public class Domain : IDisposable
     {
-        public Dictionary<string, Task> tasks = new Dictionary<string, Task>();
-        public Dictionary<string, Precondition> preconditions = new Dictionary<string, Precondition>();
-        public Dictionary<string, Action> actions = new Dictionary<string, Action>();
-        public List<Sensor> sensors = new List<Sensor>();
+        internal Dictionary<string, Task> tasks = new Dictionary<string, Task>();
+        internal Dictionary<string, Precondition> preconditions = new Dictionary<string, Precondition>();
+        internal Dictionary<string, Action> actions = new Dictionary<string, Action>();
+        internal List<Sensor> sensors = new List<Sensor>();
 
-        public Precondition GetPrecondition(string name)
+        internal Precondition GetPrecondition(string name)
         {
-            Precondition precondition;
-            if (!preconditions.TryGetValue(name, out precondition))
+            if (!preconditions.TryGetValue(name, out Precondition precondition))
                 precondition = preconditions[name] = new Precondition { name = name };
             return precondition;
         }
 
-        public Action GetAction(string name)
+        internal Action GetAction(string name)
         {
-            Action action;
-            if (!actions.TryGetValue(name, out action))
+            if (!actions.TryGetValue(name, out Action action))
                 action = actions[name] = new Action { name = name };
             return action;
         }
 
-        public Task root;
+        internal Task root;
 
         static Domain active;
 
+        /// <summary>
+        /// Create a new domain and set it to be the active domain. The domain
+        /// contains all tasks and sensors.
+        /// </summary>
+        /// <returns>The new.</returns>
         public static Domain New()
         {
             if (active != null) throw new Exception("Must dispose current domain before calling New.");
@@ -37,6 +41,13 @@ namespace uHTNP.DSL
             return active;
         }
 
+        /// <summary>
+        /// Defines a named compound task and adds it to the active domain.
+        /// A compound task contains methods which contain conditions and
+        /// other primitive and compound tasks.
+        /// </summary>
+        /// <returns>The compound task.</returns>
+        /// <param name="name">Name.</param>
         public static CompoundTask DefineCompoundTask(string name)
         {
             CheckInternalState();
@@ -45,6 +56,13 @@ namespace uHTNP.DSL
             return t;
         }
 
+        /// <summary>
+        /// Defines a named primitive task and adds it to the active domain.
+        /// A primitive task checks conditions, runs an action, and applies an
+        /// effect to the world state.
+        /// </summary>
+        /// <returns>The primitive task.</returns>
+        /// <param name="name">Name.</param>
         public static PrimitiveTask DefinePrimitiveTask(string name)
         {
             CheckInternalState();
@@ -53,6 +71,12 @@ namespace uHTNP.DSL
             return p;
         }
 
+        /// <summary>
+        /// Defines a named sensor. A sensor is checked when needed and updates
+        /// the world state.
+        /// </summary>
+        /// <returns>The sensor.</returns>
+        /// <param name="name">Name.</param>
         public static Sensor DefineSensor(string name)
         {
             CheckInternalState();
@@ -61,12 +85,21 @@ namespace uHTNP.DSL
             return s;
         }
 
+        /// <summary>
+        /// Sets the root task of the planner. This is the compound task which 
+        /// is executed first.
+        /// </summary>
+        /// <param name="name">Name.</param>
         public static void SetRootTask(string name)
         {
             CheckInternalState();
             active.root = active.tasks[name];
         }
 
+        /// <summary>
+        /// Updates the state of the world by checking all sensors.
+        /// </summary>
+        /// <param name="currentState">Current state.</param>
         public void UpdateWorldState(WorldState currentState)
         {
             foreach (var s in sensors)

@@ -3,7 +3,7 @@ using uHTNP;
 using uHTNP.DSL;
 using static uHTNP.DSL.Domain;
 
-namespace uHTNP.Tests
+namespace uHTNP
 {
 
 
@@ -26,14 +26,15 @@ namespace uHTNP.Tests
                     .Unset("B");
 
                 DefineCompoundTask("C1")
-                    .AddMethod("CT1")
+                    .DefineMethod("CT1")
                         .Conditions("C1C1")
                         .Tasks("P1", "P2")
-                    .AddMethod("CT2")
+                    .DefineMethod("CT2")
                         .Conditions("C1C2")
                         .Tasks("P1");
 
                 SetRootTask("C1");
+
                 return domain;
             }
         }

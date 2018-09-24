@@ -18,5 +18,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="UnitTest1.cs" />
+    <Compile Remove="Properties\AssemblyInfo.cs" />
   </ItemGroup>
 </Project>

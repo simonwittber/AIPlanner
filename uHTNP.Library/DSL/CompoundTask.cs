@@ -7,16 +7,24 @@ namespace uHTNP.DSL
 {
     public class CompoundTask : Task
     {
-        public Domain domain;
-        public List<Method> methods = new List<Method>();
+        internal Domain domain;
+        internal List<Method> methods = new List<Method>();
 
-        public CompoundTask AddMethod(string name)
+        /// <summary>
+        /// Defines a new method on this task. A method is a set of 
+        /// preconditions and a list of sub tasks.
+        /// </summary>
+        public CompoundTask DefineMethod(string name)
         {
             var m = new Method { name = name };
             methods.Add(m);
             return this;
         }
 
+        /// <summary>
+        /// Adds named preconditions to the last Method created by the 
+        /// DefineMethod call.
+        /// </summary>
         public CompoundTask Conditions(params string[] preconditions)
         {
             var m = methods.Last();
@@ -24,6 +32,10 @@ namespace uHTNP.DSL
             return this;
         }
 
+        /// <summary>
+        /// Adds named tasks to the last Method created by the DefineMethod 
+        /// call.
+        /// </summary>
         public CompoundTask Tasks(params string[] tasks)
         {
             var m = methods.Last();
@@ -37,7 +49,7 @@ namespace uHTNP.DSL
             return this;
         }
 
-        public Method FindSatisfiedMethod(WorldState state)
+        internal Method FindSatisfiedMethod(WorldState state)
         {
             foreach (var m in methods)
             {
