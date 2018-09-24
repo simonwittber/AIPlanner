@@ -17,7 +17,7 @@ namespace uHTNP.DSL
 
         internal Task root;
 
-        static Domain active;
+        [ThreadStatic] static Domain active;
 
         /// <summary>
         /// Create a new domain and set it to be the active domain. The domain

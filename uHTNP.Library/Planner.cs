@@ -12,7 +12,7 @@ namespace uHTNP
     /// </summary>
     public static class Planner
     {
-        [ThreadStatic] static readonly Stack<PlanState> history = new Stack<PlanState>();
+        [ThreadStatic] static Stack<PlanState> history;
 
         struct PlanState
         {
@@ -33,6 +33,7 @@ namespace uHTNP
             domain.UpdateWorldState(currentState);
             var taskQueue = new List<Task> { domain.root };
             var plan = new List<PrimitiveTask>();
+            if (history == null) history = new Stack<PlanState>();
             history.Clear();
             var state = currentState.Copy();
 
