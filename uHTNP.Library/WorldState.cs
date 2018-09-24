@@ -4,6 +4,10 @@ using uHTNP.DSL;
 
 namespace uHTNP
 {
+    /// <summary>
+    /// The world state is a simple map of name to boolean values. All values
+    /// default to false.
+    /// </summary>
     public class WorldState
     {
         internal Dictionary<string, bool> states = new Dictionary<string, bool>();

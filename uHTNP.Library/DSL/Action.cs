@@ -11,8 +11,14 @@ namespace uHTNP.DSL
     {
         static readonly System.Func<WorldState, ActionState> DefaultAction = (A) => ActionState.Success;
 
+        /// <summary>
+        /// The unique name of the action.
+        /// </summary>
         public string name = string.Empty;
 
+        /// <summary>
+        /// The action delegate which performs the actual work.
+        /// </summary>
         public System.Func<WorldState, ActionState> actionDelegate = DefaultAction;
     }
 }

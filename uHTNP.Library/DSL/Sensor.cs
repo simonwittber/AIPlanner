@@ -9,8 +9,15 @@
     {
         static readonly System.Action<WorldState> DefaultSensor = (A) => { };
 
+        /// <summary>
+        /// The unique name of the sensor.
+        /// </summary>
         public string name = string.Empty;
 
+        /// <summary>
+        /// The sensor delegate which performs logic tests and sets world state
+        /// to suit.
+        /// </summary>
         public System.Action<WorldState> sensorDelegate = DefaultSensor;
     }
 }

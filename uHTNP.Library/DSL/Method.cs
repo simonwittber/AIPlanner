@@ -9,6 +9,9 @@ namespace uHTNP.DSL
     /// </summary>
     public class Method
     {
+        /// <summary>
+        /// The unique name of the method.
+        /// </summary>
         public string name = string.Empty;
 
         internal List<Precondition> preconditions = new List<Precondition>();

@@ -5,10 +5,24 @@ using uHTNP.DSL;
 
 namespace uHTNP
 {
+    /// <summary>
+    /// Represents the current state of plan execution.
+    /// </summary>
     public enum PlanState
     {
+        /// <summary>
+        /// The plan failed, usually due to a change in state effecting required
+        /// preconditions for a task.
+        /// </summary>
         Failed,
+        /// <summary>
+        /// The plan is stil in progress, and Execute needs to be called again
+        /// in the next frame.
+        /// </summary>
         InProgress,
+        /// <summary>
+        /// The plan completed successfuly.
+        /// </summary>
         Completed
     }
 
@@ -21,6 +35,12 @@ namespace uHTNP
         readonly Queue<PrimitiveTask> tasks;
         readonly Domain domain;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="T:uHTNP.PlanRunner"/> 
+        /// class for a given domain and list of tasks.
+        /// </summary>
+        /// <param name="domain">Domain.</param>
+        /// <param name="plan">Plan.</param>
         public PlanRunner(Domain domain, List<PrimitiveTask> plan)
         {
             tasks = new Queue<PrimitiveTask>(plan);

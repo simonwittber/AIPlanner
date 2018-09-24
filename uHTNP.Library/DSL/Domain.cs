@@ -96,6 +96,9 @@ namespace uHTNP.DSL
                 s.sensorDelegate.Invoke(currentState);
         }
 
+        /// <summary>
+        /// Closes the domain, sets active domain to null.
+        /// </summary>
         public void Dispose()
         {
             active = null;
