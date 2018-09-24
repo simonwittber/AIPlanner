@@ -16,11 +16,11 @@ namespace uHTNP
             var plan = Planner.CreatePlan(state, d);
             Assert.Collection(plan, A => Assert.Equal("WalkToRandomPosition", A.name), A => Assert.Equal("LookAround", A.name));
             var success = false;
-            d.actions["PlayWalkAnimation"].actionDelegate = (currentState) =>
+            d.BindAction("PlayWalkAnimation", currentState =>
             {
                 success = true;
                 return ActionState.Success;
-            };
+            });
             Assert.False(success);
             var runner = new PlanRunner(d, plan);
             var planState = runner.Execute(state);
@@ -32,11 +32,11 @@ namespace uHTNP
             Assert.Collection(plan, A => Assert.Equal("AttackPlayer", A.name));
 
             success = false;
-            d.actions["PlayAttackAnimation"].actionDelegate = (currentState) =>
+            d.BindAction("PlayAttackAnimation", currentState =>
             {
                 success = true;
                 return ActionState.Success;
-            };
+            });
             runner = new PlanRunner(d, plan);
             planState = runner.Execute(state);
             Assert.True(success);

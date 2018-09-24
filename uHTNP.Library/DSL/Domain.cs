@@ -13,11 +13,41 @@ namespace uHTNP.DSL
         internal Dictionary<string, Task> tasks = new Dictionary<string, Task>();
         internal Dictionary<string, Precondition> preconditions = new Dictionary<string, Precondition>();
         internal Dictionary<string, Action> actions = new Dictionary<string, Action>();
-        internal List<Sensor> sensors = new List<Sensor>();
+        internal Dictionary<string, Sensor> sensors = new Dictionary<string, Sensor>();
 
         internal Task root;
 
         [ThreadStatic] static Domain active;
+
+        /// <summary>
+        /// Bind an action delegate to a named action.
+        /// </summary>
+        /// <param name="name">Name.</param>
+        /// <param name="actionDelegate">Action delegate.</param>
+        public void BindAction(string name, System.Func<WorldState, ActionState> actionDelegate)
+        {
+            actions[name].actionDelegate = actionDelegate;
+        }
+
+        /// <summary>
+        /// Bind a precondition delgate to a named precondition.
+        /// </summary>
+        /// <param name="name">Name.</param>
+        /// <param name="conditionDelegate">Condition delegate.</param>
+        public void BindPrecondition(string name, System.Func<bool> conditionDelegate)
+        {
+            preconditions[name].proceduralPrecondition = conditionDelegate;
+        }
+
+        /// <summary>
+        /// Bind a sensor delegate to a named sensor.
+        /// </summary>
+        /// <param name="name">Name.</param>
+        /// <param name="sensorDelegate">Sensor delegate.</param>
+        public void BindSensor(string name, Action<WorldState> sensorDelegate)
+        {
+            sensors[name].sensorDelegate = sensorDelegate;
+        }
 
         /// <summary>
         /// Create a new domain and set it to be the active domain. The domain
@@ -71,7 +101,7 @@ namespace uHTNP.DSL
         {
             CheckInternalState();
             var s = new Sensor { name = name };
-            active.sensors.Add(s);
+            active.sensors.Add(s.name, s);
             return s;
         }
 
@@ -92,7 +122,7 @@ namespace uHTNP.DSL
         /// <param name="currentState">Current state.</param>
         public void UpdateWorldState(WorldState currentState)
         {
-            foreach (var s in sensors)
+            foreach (var s in sensors.Values)
                 s.sensorDelegate.Invoke(currentState);
         }
 
