@@ -1,9 +1,9 @@
 
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "uHTNP", "uHTNP.Library\uHTNP.csproj", "{73F5D0AE-CDA4-4ECD-9C92-664693FC724D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AIPlanner", "AIPlanner\AIPlanner.csproj", "{73F5D0AE-CDA4-4ECD-9C92-664693FC724D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "uHTNP.Tests", "uHTNP.Tests\uHTNP.Tests.csproj", "{987D0079-4840-4684-B1E9-8A7293DC827B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AIPlanner.Tests", "AIPlanner.Tests\AIPlanner.Tests.csproj", "{987D0079-4840-4684-B1E9-8A7293DC827B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

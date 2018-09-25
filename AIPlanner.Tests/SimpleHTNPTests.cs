@@ -1,9 +1,9 @@
 ﻿using Xunit;
-using uHTNP;
-using uHTNP.DSL;
-using static uHTNP.DSL.Domain;
+using AIPlanner;
+using AIPlanner.DSL;
+using static AIPlanner.DSL.Domain;
 
-namespace uHTNP
+namespace AIPlanner
 {
 
 
@@ -48,12 +48,12 @@ namespace uHTNP
             Assert.Equal(d.root, d.tasks["C1"]);
             var state = new WorldState();
             state.Set("C1C2", true);
-            var plan = Planner.CreatePlan(state, d);
+            var plan = HTNPlanner.CreatePlan(state, d);
             Assert.NotNull(plan);
             Assert.Empty(plan);
             state.Set("P1C1", true);
             state.Set("P1C2", true);
-            plan = Planner.CreatePlan(state, d);
+            plan = HTNPlanner.CreatePlan(state, d);
             Assert.Collection(plan, (A) => Assert.Equal("P1", A.name));
         }
 
@@ -82,7 +82,7 @@ namespace uHTNP
             state.Set("C1C2", true);
             state.Set("P1C1", true);
             state.Set("P1C2", true);
-            var plan = Planner.CreatePlan(state, d);
+            var plan = HTNPlanner.CreatePlan(state, d);
             var runner = new PlanRunner(d, plan);
             runner.Execute(state);
             Assert.Contains(state.states.Keys, A => A == "X");

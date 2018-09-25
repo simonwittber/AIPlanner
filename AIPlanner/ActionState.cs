@@ -1,4 +1,4 @@
-﻿namespace uHTNP
+﻿namespace AIPlanner
 {
     /// <summary>
     /// An action state is returned by action functions, and determines the

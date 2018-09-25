@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 
 
-namespace uHTNP.DSL
+namespace AIPlanner.DSL
 {
     /// <summary>
     /// The Domain is a collection of tasks, conditions and actions that are 
@@ -16,6 +16,7 @@ namespace uHTNP.DSL
         internal Dictionary<string, Precondition> preconditions = new Dictionary<string, Precondition>();
         internal Dictionary<string, Action> actions = new Dictionary<string, Action>();
         internal Dictionary<string, Sensor> sensors = new Dictionary<string, Sensor>();
+        internal Dictionary<string, ProceduralCost> costs = new Dictionary<string, ProceduralCost>();
 
         internal Task root;
 
@@ -29,6 +30,16 @@ namespace uHTNP.DSL
         public void BindAction(string name, System.Func<WorldState, ActionState> actionDelegate)
         {
             actions[name].actionDelegate = actionDelegate;
+        }
+
+        /// <summary>
+        /// Bind an cost delegate to a named cost.
+        /// </summary>
+        /// <param name="name">Name.</param>
+        /// <param name="costDelegate">Cost calculation delegate.</param>
+        public void BindCost(string name, System.Func<WorldState, float> costDelegate)
+        {
+            costs[name].costDelegate = costDelegate;
         }
 
         /// <summary>
@@ -148,6 +159,13 @@ namespace uHTNP.DSL
             if (!actions.TryGetValue(name, out Action action))
                 action = actions[name] = new Action { name = name };
             return action;
+        }
+
+        internal ProceduralCost GetCost(string name)
+        {
+            if (!costs.TryGetValue(name, out ProceduralCost cost))
+                cost = costs[name] = new ProceduralCost { name = name };
+            return cost;
         }
 
         static void CheckInternalState()

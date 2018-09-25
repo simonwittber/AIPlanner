@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using uHTNP.DSL;
+using AIPlanner.DSL;
 
 
-namespace uHTNP
+namespace AIPlanner
 {
     /// <summary>
     /// Planner is a static class used to create a plan (List of tasks) in a 
     /// domain.
     /// </summary>
-    public static class Planner
+    public static class HTNPlanner
     {
         [ThreadStatic] static Stack<PlanState> history;
 

@@ -1,4 +1,4 @@
-﻿namespace uHTNP.DSL
+﻿namespace AIPlanner.DSL
 {
     /// <summary>
     /// The base class for Compound and Primitive Tasks.

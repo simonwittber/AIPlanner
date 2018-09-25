@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace uHTNP.DSL
+namespace AIPlanner.DSL
 {
     /// <summary>
     /// An Action is analogous to a method call. It is passed the current world

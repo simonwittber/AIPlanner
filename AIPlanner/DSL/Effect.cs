@@ -1,4 +1,4 @@
-namespace uHTNP.DSL
+namespace AIPlanner.DSL
 {
     /// <summary>
     /// An Effect is a state name and a value. It is used by PrimitiveTasks to

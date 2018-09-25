@@ -14,10 +14,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\uHTNP.Library\uHTNP.csproj" />
-  </ItemGroup>
-  <ItemGroup>
     <Compile Remove="UnitTest1.cs" />
     <Compile Remove="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AIPlanner\AIPlanner.csproj" />
   </ItemGroup>
 </Project>

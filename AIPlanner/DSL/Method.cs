@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace uHTNP.DSL
+namespace AIPlanner.DSL
 {
     /// <summary>
     /// A Method is a collection of tasks that are grouped by a common list of

@@ -1,8 +1,8 @@
 ﻿using Xunit;
-using uHTNP.DSL;
-using static uHTNP.DSL.Domain;
+using AIPlanner.DSL;
+using static AIPlanner.DSL.Domain;
 
-namespace uHTNP
+namespace AIPlanner
 {
     public class ComplexHTNPTests
     {
@@ -13,7 +13,7 @@ namespace uHTNP
             var d = CreateDomain();
             var state = new WorldState();
             state.Set("PlayerNotVisible", true);
-            var plan = Planner.CreatePlan(state, d);
+            var plan = HTNPlanner.CreatePlan(state, d);
             Assert.Collection(plan, A => Assert.Equal("WalkToRandomPosition", A.name), A => Assert.Equal("LookAround", A.name));
             var success = false;
             d.BindAction("PlayWalkAnimation", currentState =>
@@ -28,7 +28,7 @@ namespace uHTNP
             Assert.Equal(PlanState.Completed, planState);
             Assert.False(state.Get("PlayerDead"));
 
-            plan = Planner.CreatePlan(state, d);
+            plan = HTNPlanner.CreatePlan(state, d);
             Assert.Collection(plan, A => Assert.Equal("AttackPlayer", A.name));
 
             success = false;
@@ -60,6 +60,7 @@ namespace uHTNP
                 DefinePrimitiveTask("AttackPlayer")
                     .Conditions("PlayerIsVisible")
                     .Actions("PlayAttackAnimation")
+                    .Cost(10)
                     .Set("PlayerIsDead")
                     .Set("PlayerNotVisible")
                     .Set("PlayerDead")

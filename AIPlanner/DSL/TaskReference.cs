@@ -1,4 +1,4 @@
-namespace uHTNP.DSL
+namespace AIPlanner.DSL
 {
     class TaskReference
     {

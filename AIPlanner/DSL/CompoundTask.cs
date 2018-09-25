@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace uHTNP.DSL
+namespace AIPlanner.DSL
 {
     /// <summary>
     /// A Compound task is a list of Methods. At execute time, the appropriate

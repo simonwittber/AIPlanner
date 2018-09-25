@@ -1,5 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
 
 #if DEBUG
-[assembly: InternalsVisibleTo("uHTNP.Tests")]
+[assembly: InternalsVisibleTo("AIPlanner.Tests")]
 #endif

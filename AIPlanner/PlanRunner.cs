@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using uHTNP.DSL;
+using AIPlanner.DSL;
 
-namespace uHTNP
+namespace AIPlanner
 {
     /// <summary>
     /// Represents the current state of plan execution.

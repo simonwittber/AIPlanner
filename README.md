@@ -1,6 +1,7 @@
  uHTNP provides:
  - A C# DSL for defining a Hierarchial Task Network.
  - A planner which can use the network to create a plan.
+ - A GIAP planner which can use the primitive tasks in the netwrok to create a plan.
  - A runner which will execute the plan.
 
 Define the BTN

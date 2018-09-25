@@ -1,4 +1,4 @@
-﻿namespace uHTNP.DSL
+﻿namespace AIPlanner.DSL
 {
     /// <summary>
     /// A Sensor instance contains a delegate which is passed a WorldState

@@ -1,6 +1,6 @@
 using System;
 
-namespace uHTNP.DSL
+namespace AIPlanner.DSL
 {
     /// <summary>
     /// A Precondition maps a a state that must be satisfied, as well as an
