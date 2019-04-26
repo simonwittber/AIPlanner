@@ -1,67 +1,42 @@
  AIPlanner provides:
- - A C# DSL for defining a Hierarchial Task Network or GOAP Tasks.
- - A BTN planner which can use the network to create a plan.
- - A GOAP planner which can use the primitive tasks to create a plan.
+ - A C# DSL for defining a Hierarchial Task Network.
+ - A HTN planner which can use the network to create a plan.
  - A runner which will execute the plan.
 
-Define the BTN
+Define the HTN
 --------------
 ```
-    using (var domain = Domain.New())
+    public StateVariable health;
+    public StateVariable fuel;
+    public StateVariable speed;
+
+    PlanRunner runner;
+
+    Domain CreateDomain()
     {
-        DefinePrimitiveTask("WalkToRandomPosition")
-            .Actions("PlayWalkAnimation");
+        fuel.value = 13;
 
-        DefinePrimitiveTask("LookAround")
-            .Actions("PlayLookAnimation")
-            .Set("PlayerIsVisible")
-            .Unset("PlayerNotVisible");
+        using (domain = Domain.New())
+        {
+            DefineWorldState(health, fuel, speed);
 
-        DefinePrimitiveTask("AttackPlayer")
-            .Conditions("PlayerIsVisible")
-            .Actions("PlayAttackAnimation")
-            .Set("PlayerIsDead")
-            .Set("PlayerNotVisible")
-            .Set("PlayerDead")
-            .Unset("PlayerIsVisible");
+            DefinePrimitiveTask(MoveSomewhereRandom)
+                .Conditions(fuel > 1)
+                .Set(fuel - 1, speed + 1);
 
-        DefineCompoundTask("BeAnEnemy")
-            .DefineMethod("FindPlayer")
-                .Conditions("PlayerNotVisible")
-                .Tasks("WalkToRandomPosition", "LookAround")
-            .DefineMethod("AttackPlayer")
-                .Conditions("PlayerIsVisible")
-                .Tasks("AttackPlayer");
+            DefinePrimitiveTask(PlayAttackAnimation)
+                .Set(health + 1);
 
-        SetRootTask("BeAnEnemy");
+            DefineCompoundTask("Main")
+                .DefineMethod("FindPlayer")
+                    .Conditions(health > 1, fuel > 10)
+                    .Tasks(MoveSomewhereRandom)
+                .DefineMethod("AttackPlayer")
+                    .Conditions(health == 3)
+                    .Tasks(PlayAttackAnimation);
 
-        return domain;
+            SetRootTask("Main");
+            return domain;
+        }
     }
-```
-
-Bind Methods
-------------
-This connects plan execution into your application.
-Similar Bind methods exist for procedural preconditions and sensors.
-```
-    var d = CreateDomain();
-    d.BindAction("PlayWalkAnimation", currentState =>
-    {
-        return ActionState.Success;
-    });
-```
-
-Create a Plan
--------------
-```
-    var state = new WorldState();
-    state.Set("PlayerNotVisible", true);
-    var plan = Planner.CreatePlan(state, d);
-```
-
-Execute the Plan
-----------------
-```
-    var runner = new PlanRunner(d, plan);
-    var planState = runner.Execute(state);
 ```
