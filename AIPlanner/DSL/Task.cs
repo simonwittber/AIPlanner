@@ -1,4 +1,4 @@
-﻿namespace AIPlanner.DSL
+﻿namespace AIPlanner
 {
     /// <summary>
     /// The base class for Compound and Primitive Tasks.

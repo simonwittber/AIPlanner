@@ -1,4 +1,4 @@
-namespace AIPlanner.DSL
+namespace AIPlanner
 {
     class TaskReference
     {

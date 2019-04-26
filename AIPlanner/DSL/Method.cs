@@ -1,6 +1,7 @@
 using System.Collections.Generic;
+using System.Linq;
 
-namespace AIPlanner.DSL
+namespace AIPlanner
 {
     /// <summary>
     /// A Method is a collection of tasks that are grouped by a common list of
@@ -14,8 +15,13 @@ namespace AIPlanner.DSL
         /// </summary>
         public string name = string.Empty;
 
-        internal List<Precondition> preconditions = new List<Precondition>();
+        internal List<Condition> conditions = new List<Condition>();
 
         internal List<TaskReference> tasks = new List<TaskReference>();
+
+        public override string ToString()
+        {
+            return $"Method {name}";
+        }
     }
 }

@@ -2,64 +2,46 @@ using System;
 using System.Collections.Generic;
 
 
-namespace AIPlanner.DSL
+namespace AIPlanner
 {
+    public delegate ActionState ActionDelegate();
+
     /// <summary>
     /// The Domain is a collection of tasks, conditions and actions that are 
-    /// used to create a plan based on world state. While domain instances do
-    /// not share state, the methods they are bound to (using Bind* calls) may,
-    /// so it is safer to create a new Domain instance for each actor.
+    /// used to create a plan based on world state. 
     /// </summary>
+    [System.Serializable]
     public class Domain : IDisposable
     {
+
+        public List<PrimitiveTask> plan = new List<PrimitiveTask>();
+        public PlanState planState = PlanState.Waiting;
+
         internal Dictionary<string, Task> tasks = new Dictionary<string, Task>();
-        internal Dictionary<string, Precondition> preconditions = new Dictionary<string, Precondition>();
-        internal Dictionary<string, Action> actions = new Dictionary<string, Action>();
-        internal Dictionary<string, Sensor> sensors = new Dictionary<string, Sensor>();
-        internal Dictionary<string, ProceduralCost> costs = new Dictionary<string, ProceduralCost>();
 
         internal Task root;
 
+        internal StateVariable[] worldState;
+
         [ThreadStatic] static Domain active;
 
-        /// <summary>
-        /// Bind an action delegate to a named action.
-        /// </summary>
-        /// <param name="name">Name.</param>
-        /// <param name="actionDelegate">Action delegate.</param>
-        public void BindAction(string name, System.Func<WorldState, ActionState> actionDelegate)
+        public override string ToString()
         {
-            actions[name].actionDelegate = actionDelegate;
+            return root.ToString();
         }
 
         /// <summary>
-        /// Bind an cost delegate to a named cost.
+        /// Define the collection of StateVariable instances that define the world state for this domain.
         /// </summary>
-        /// <param name="name">Name.</param>
-        /// <param name="costDelegate">Cost calculation delegate.</param>
-        public void BindCost(string name, System.Func<WorldState, float> costDelegate)
+        /// <param name="variables"></param>
+        public static void DefineWorldState(params StateVariable[] variables)
         {
-            costs[name].costDelegate = costDelegate;
-        }
-
-        /// <summary>
-        /// Bind a precondition delgate to a named precondition.
-        /// </summary>
-        /// <param name="name">Name.</param>
-        /// <param name="conditionDelegate">Condition delegate.</param>
-        public void BindPrecondition(string name, System.Func<bool> conditionDelegate)
-        {
-            preconditions[name].proceduralPrecondition = conditionDelegate;
-        }
-
-        /// <summary>
-        /// Bind a sensor delegate to a named sensor.
-        /// </summary>
-        /// <param name="name">Name.</param>
-        /// <param name="sensorDelegate">Sensor delegate.</param>
-        public void BindSensor(string name, Action<WorldState> sensorDelegate)
-        {
-            sensors[name].sensorDelegate = sensorDelegate;
+            CheckInternalState();
+            for (var i = 0; i < variables.Length; i++)
+            {
+                variables[i].index = i;
+            }
+            active.worldState = variables;
         }
 
         /// <summary>
@@ -96,26 +78,14 @@ namespace AIPlanner.DSL
         /// </summary>
         /// <returns>The primitive task.</returns>
         /// <param name="name">Name.</param>
-        public static PrimitiveTask DefinePrimitiveTask(string name)
+        public static PrimitiveTask DefinePrimitiveTask(ActionDelegate fn)
         {
             CheckInternalState();
+            var name = fn.Method.Name;
             var p = new PrimitiveTask { name = name, domain = active };
+            p.action = fn;
             active.tasks.Add(name, p);
             return p;
-        }
-
-        /// <summary>
-        /// Defines a named sensor. A sensor is checked when needed and updates
-        /// the world state.
-        /// </summary>
-        /// <returns>The sensor.</returns>
-        /// <param name="name">Name.</param>
-        public static Sensor DefineSensor(string name)
-        {
-            CheckInternalState();
-            var s = new Sensor { name = name };
-            active.sensors.Add(s.name, s);
-            return s;
         }
 
         /// <summary>
@@ -130,42 +100,11 @@ namespace AIPlanner.DSL
         }
 
         /// <summary>
-        /// Updates the state of the world by checking all sensors.
-        /// </summary>
-        /// <param name="currentState">Current state.</param>
-        public void UpdateWorldState(WorldState currentState)
-        {
-            foreach (var s in sensors.Values)
-                s.sensorDelegate.Invoke(currentState);
-        }
-
-        /// <summary>
         /// Closes the domain, sets active domain to null.
         /// </summary>
         public void Dispose()
         {
             active = null;
-        }
-
-        internal Precondition GetPrecondition(string name)
-        {
-            if (!preconditions.TryGetValue(name, out Precondition precondition))
-                precondition = preconditions[name] = new Precondition { name = name };
-            return precondition;
-        }
-
-        internal Action GetAction(string name)
-        {
-            if (!actions.TryGetValue(name, out Action action))
-                action = actions[name] = new Action { name = name };
-            return action;
-        }
-
-        internal ProceduralCost GetCost(string name)
-        {
-            if (!costs.TryGetValue(name, out ProceduralCost cost))
-                cost = costs[name] = new ProceduralCost { name = name };
-            return cost;
         }
 
         static void CheckInternalState()

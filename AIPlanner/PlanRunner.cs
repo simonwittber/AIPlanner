@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using AIPlanner.DSL;
+using UnityEngine;
 
 namespace AIPlanner
 {
@@ -23,7 +23,12 @@ namespace AIPlanner
         /// <summary>
         /// The plan completed successfuly.
         /// </summary>
-        Completed
+        Completed,
+        /// <summary>
+        /// The plan has not started.
+        /// </summary>
+        Waiting,
+        NoPlan
     }
 
     /// <summary>
@@ -41,10 +46,17 @@ namespace AIPlanner
         /// </summary>
         /// <param name="domain">Domain.</param>
         /// <param name="plan">Plan.</param>
-        public PlanRunner(Domain domain, List<PrimitiveTask> plan)
+        public PlanRunner(Domain domain)
         {
-            tasks = new Queue<PrimitiveTask>(plan);
+            tasks = new Queue<PrimitiveTask>(domain.plan);
             this.domain = domain;
+        }
+
+        public void Reset()
+        {
+            tasks.Clear();
+            foreach (var i in domain.plan)
+                tasks.Enqueue(i);
         }
 
         /// <summary>
@@ -52,13 +64,12 @@ namespace AIPlanner
         /// InProgress, Execute will need to be called again during the next
         /// update tick.
         /// </summary>
-        public PlanState Execute(WorldState state)
+        public PlanState Execute()
         {
             while (tasks.Count > 0)
             {
                 var task = tasks.Dequeue();
-                domain.UpdateWorldState(state);
-                switch (ExecuteTask(state, task))
+                switch (ExecuteTask(task))
                 {
                     case ActionState.Error:
                         return PlanState.Failed;
@@ -66,13 +77,21 @@ namespace AIPlanner
                         tasks.Enqueue(task);
                         return PlanState.InProgress;
                     case ActionState.Success:
-                        state.ApplyEffects(task.effects);
+                        ApplyEffects(task.effects);
                         continue;
                 }
             }
             return PlanState.Completed;
         }
 
-        ActionState ExecuteTask(WorldState state, PrimitiveTask task) => task.action.actionDelegate.Invoke(state);
+        private void ApplyEffects(List<Effect> effects)
+        {
+            foreach (var i in effects)
+            {
+                i.fn(domain.worldState[i.variable.index]);
+            }
+        }
+
+        ActionState ExecuteTask(PrimitiveTask task) => task.action();
     }
 }
