@@ -10,16 +10,19 @@ namespace AIPlanner
     /// Planner is a static class used to create a plan (List of tasks) in a 
     /// domain.
     /// </summary>
-    public static class HTNPlanner
+    public static partial class HTNPlanner
     {
         [ThreadStatic] static Stack<PlannerState> history;
-
+        [ThreadStatic] static List<Task> taskQueue;
+        [ThreadStatic] static List<StateVariable> states;
         struct PlannerState
         {
-            public float[] state;
-            public PrimitiveTask[] plan;
-            public Task[] queue;
+            public List<float> state;
+            public List<PrimitiveTask> plan;
+            public List<Task> queue;
         }
+
+        static object me = new object();
 
         /// <summary>
         /// Creates the plan based on current world state. A plan is a list of
@@ -28,63 +31,68 @@ namespace AIPlanner
         /// <returns>The plan.</returns>
         /// <param name="currentState">Current state.</param>
         /// <param name="domain">Domain.</param>
-        static public bool CreatePlan(Domain domain)
+        static public bool CreatePlan(Domain domain, List<StateVariable> worldState, Plan plan)
         {
-            var taskQueue = new List<Task> { domain.root };
-            domain.plan.Clear();
-            if (history == null) history = new Stack<PlannerState>();
-            history.Clear();
-            var state = (StateVariable[])domain.worldState.Clone();
-
-            while (taskQueue.Count > 0)
+            lock (me)
             {
-                var task = taskQueue[0];
-                taskQueue.RemoveAt(0);
-                if (task is CompoundTask)
+                plan.Clear();
+                if (history == null) history = new Stack<PlannerState>();
+                if (taskQueue == null) taskQueue = new List<Task>();
+                if (states == null) states = new List<StateVariable>();
+                states.Clear();
+                taskQueue.Clear();
+                history.Clear();
+                taskQueue.Add(domain.root);
+
+                states.AddRange(worldState);
+
+                while (taskQueue.Count > 0)
                 {
-                    var compoundTask = task as CompoundTask;
-                    var method = compoundTask.FindSatisfiedMethod(state);
-                    if (method != null)
+                    var task = taskQueue[0];
+                    taskQueue.RemoveAt(0);
+                    if (task is CompoundTask)
                     {
-                        SaveHistory(taskQueue, domain.plan, state);
-                        foreach (var i in method.tasks)
+                        var compoundTask = task as CompoundTask;
+                        var method = compoundTask.FindSatisfiedMethod(states);
+                        if (method != null)
                         {
-                            taskQueue.Add(domain.tasks[i.name]);
+                            SaveHistory(taskQueue, plan, states);
+                            foreach (var i in method.tasks)
+                            {
+                                taskQueue.Add(domain.tasks[i.name]);
+                            }
+                        }
+                        else
+                        {
+                            if (!RestoreHistory(taskQueue, plan, states))
+                            {
+                                return false;
+                            }
                         }
                     }
                     else
                     {
-                        if (!RestoreHistory(taskQueue, domain.plan, state))
+                        var primitiveTask = task as PrimitiveTask;
+                        if (primitiveTask.ConditionsAreValid(states))
                         {
-                            domain.planState = PlanState.NoPlan;
-                            return false;
+                            primitiveTask.ApplyEffects(states);
+                            plan.Add(primitiveTask);
+                        }
+                        else
+                        {
+                            if (!RestoreHistory(taskQueue, plan, states))
+                            {
+                                return false;
+                            }
                         }
                     }
                 }
-                else
-                {
-                    var primitiveTask = task as PrimitiveTask;
-                    if (primitiveTask.ConditionsAreValid(state))
-                    {
-                        primitiveTask.ApplyEffects(state);
-                        domain.plan.Add(primitiveTask);
-                    }
-                    else
-                    {
-                        if (!RestoreHistory(taskQueue, domain.plan, state))
-                        {
-                            domain.planState = PlanState.NoPlan;
-                            return false;
-                        }
-                    }
-                }
+                history.Clear();
+                return true;
             }
-            history.Clear();
-            domain.planState = PlanState.Waiting;
-            return true;
         }
 
-        static bool RestoreHistory(List<Task> taskQueue, List<PrimitiveTask> plan, StateVariable[] state)
+        static bool RestoreHistory(List<Task> taskQueue, List<PrimitiveTask> plan, List<StateVariable> state)
         {
             if (history.Count == 0) return false;
             var h = history.Pop();
@@ -92,14 +100,27 @@ namespace AIPlanner
             taskQueue.AddRange(h.queue);
             plan.Clear();
             plan.AddRange(h.plan);
-            for (var i = 0; i < state.Length; i++)
+            for (var i = 0; i < state.Count; i++)
                 state[i].value = h.state[i];
+            ListPool<Task>.Return(h.queue);
+            ListPool<PrimitiveTask>.Return(h.plan);
+            ListPool<float>.Return(h.state);
             return true;
         }
 
-        static void SaveHistory(List<Task> taskQueue, List<PrimitiveTask> plan, StateVariable[] state)
+        static void SaveHistory(List<Task> taskQueue, List<PrimitiveTask> plan, List<StateVariable> state)
         {
-            history.Push(new PlannerState { queue = taskQueue.ToArray(), plan = plan.ToArray(), state = (from i in state select i.value).ToArray() });
+            var ps = new PlannerState
+            {
+                queue = ListPool<Task>.Take(taskQueue),
+                plan = ListPool<PrimitiveTask>.Take(plan),
+                state = ListPool<float>.Take()
+            };
+            foreach (var i in state)
+            {
+                ps.state.Add(i.value);
+            }
+            history.Push(ps);
         }
     }
 }

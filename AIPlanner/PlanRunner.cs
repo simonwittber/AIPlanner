@@ -10,11 +10,7 @@ namespace AIPlanner
     /// </summary>
     public enum PlanState
     {
-        /// <summary>
-        /// The plan failed, usually due to a change in state effecting required
-        /// preconditions for a task.
-        /// </summary>
-        Failed,
+        NoPlan,
         /// <summary>
         /// The plan is stil in progress, and Execute needs to be called again
         /// in the next frame.
@@ -28,17 +24,26 @@ namespace AIPlanner
         /// The plan has not started.
         /// </summary>
         Waiting,
-        NoPlan
+        /// <summary>
+        /// The plan failed, usually due to a change in state effecting required
+        /// preconditions for a task.
+        /// </summary>
+        Failed
     }
 
     /// <summary>
     /// The Plan Runner takes a plan (List of Primitive Tasks) and executes the
     /// plan, checking preconditions and applying effects of actions as needed.
     /// </summary>
+
     public class PlanRunner
     {
+        public Task ActiveTask { get; private set; }
+        public ActionState ActiveState { get; private set; }
+        public PlanState PlanState { get; private set; } = PlanState.Waiting;
+
         readonly Queue<PrimitiveTask> tasks;
-        readonly Domain domain;
+
 
         /// <summary>
         /// Initializes a new instance of the <see cref="T:uHTNP.PlanRunner"/> 
@@ -46,17 +51,19 @@ namespace AIPlanner
         /// </summary>
         /// <param name="domain">Domain.</param>
         /// <param name="plan">Plan.</param>
-        public PlanRunner(Domain domain)
+        public PlanRunner(Plan plan)
         {
-            tasks = new Queue<PrimitiveTask>(domain.plan);
-            this.domain = domain;
+            tasks = new Queue<PrimitiveTask>();
+            foreach (var i in plan)
+                tasks.Enqueue(i);
         }
 
-        public void Reset()
+        public void Reset(Plan plan)
         {
             tasks.Clear();
-            foreach (var i in domain.plan)
+            foreach (var i in plan)
                 tasks.Enqueue(i);
+            PlanState = PlanState.Waiting;
         }
 
         /// <summary>
@@ -64,34 +71,49 @@ namespace AIPlanner
         /// InProgress, Execute will need to be called again during the next
         /// update tick.
         /// </summary>
-        public PlanState Execute()
+        public void Execute(List<StateVariable> worldState)
         {
             while (tasks.Count > 0)
             {
                 var task = tasks.Dequeue();
+                ActiveTask = task;
+                if (!task.ConditionsAreValid(worldState))
+                {
+                    ActiveTask = task;
+                    PlanState = PlanState.Failed;
+                    return;
+                }
                 switch (ExecuteTask(task))
                 {
                     case ActionState.Error:
-                        return PlanState.Failed;
+                        PlanState = PlanState.Failed;
+                        return;
                     case ActionState.InProgress:
                         tasks.Enqueue(task);
-                        return PlanState.InProgress;
+                        PlanState = PlanState.InProgress;
+                        return;
                     case ActionState.Success:
-                        ApplyEffects(task.effects);
+                        ApplyEffects(worldState, task.effects);
                         continue;
                 }
             }
-            return PlanState.Completed;
+            PlanState = PlanState.Completed;
         }
 
-        private void ApplyEffects(List<Effect> effects)
+        private void ApplyEffects(List<StateVariable> worldState, List<Effect> effects)
         {
-            foreach (var i in effects)
-            {
-                i.fn(domain.worldState[i.variable.index]);
-            }
+            if (effects != null)
+                foreach (var i in effects)
+                {
+                    i.fn(worldState[i.variable.index]);
+                }
         }
 
-        ActionState ExecuteTask(PrimitiveTask task) => task.action();
+        ActionState ExecuteTask(PrimitiveTask task)
+        {
+            ActiveTask = task;
+            ActiveState = task.action();
+            return ActiveState;
+        }
     }
 }

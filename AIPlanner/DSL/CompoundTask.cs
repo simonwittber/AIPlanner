@@ -60,7 +60,7 @@ namespace AIPlanner
             return this;
         }
 
-        internal Method FindSatisfiedMethod(StateVariable[] state)
+        internal Method FindSatisfiedMethod(List<StateVariable> state)
         {
             foreach (var m in methods)
             {

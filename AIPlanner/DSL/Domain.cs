@@ -1,27 +1,21 @@
 using System;
 using System.Collections.Generic;
-
+using System.Linq;
 
 namespace AIPlanner
 {
     public delegate ActionState ActionDelegate();
+    public delegate void VoidDelegate();
 
     /// <summary>
     /// The Domain is a collection of tasks, conditions and actions that are 
     /// used to create a plan based on world state. 
     /// </summary>
-    [System.Serializable]
     public class Domain : IDisposable
     {
-
-        public List<PrimitiveTask> plan = new List<PrimitiveTask>();
-        public PlanState planState = PlanState.Waiting;
-
         internal Dictionary<string, Task> tasks = new Dictionary<string, Task>();
 
         internal Task root;
-
-        internal StateVariable[] worldState;
 
         [ThreadStatic] static Domain active;
 
@@ -34,14 +28,14 @@ namespace AIPlanner
         /// Define the collection of StateVariable instances that define the world state for this domain.
         /// </summary>
         /// <param name="variables"></param>
-        public static void DefineWorldState(params StateVariable[] variables)
+        public static WorldState DefineWorldState(params StateVariable[] variables)
         {
             CheckInternalState();
             for (var i = 0; i < variables.Length; i++)
             {
                 variables[i].index = i;
             }
-            active.worldState = variables;
+            return new WorldState(variables);
         }
 
         /// <summary>
@@ -84,6 +78,20 @@ namespace AIPlanner
             var name = fn.Method.Name;
             var p = new PrimitiveTask { name = name, domain = active };
             p.action = fn;
+            active.tasks.Add(name, p);
+            return p;
+        }
+
+        public static PrimitiveTask DefinePrimitiveTask(VoidDelegate fn)
+        {
+            CheckInternalState();
+            var name = fn.Method.Name;
+            var p = new PrimitiveTask { name = name, domain = active };
+            p.action = () =>
+            {
+                fn();
+                return ActionState.Success;
+            };
             active.tasks.Add(name, p);
             return p;
         }

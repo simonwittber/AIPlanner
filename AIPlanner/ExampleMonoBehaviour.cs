@@ -12,6 +12,9 @@ public class ExampleMonoBehaviour : MonoBehaviour
     public StateVariable speed;
 
     PlanRunner runner;
+    Plan plan = new Plan();
+
+    WorldState worldState;
 
     Domain CreateDomain()
     {
@@ -19,14 +22,14 @@ public class ExampleMonoBehaviour : MonoBehaviour
 
         using (domain = Domain.New())
         {
-            DefineWorldState(health, fuel, speed);
+            worldState = DefineWorldState(health, fuel, speed);
 
             DefinePrimitiveTask(MoveSomewhereRandom)
                 .Conditions(fuel > 1)
-                .Set(fuel - 1, speed + 1);
+                .Effects(fuel - 1, speed + 1);
 
             DefinePrimitiveTask(PlayAttackAnimation)
-                .Set(health + 1);
+                .Effects(health + 1);
 
             DefineCompoundTask("Main")
                 .DefineMethod("FindPlayer")
@@ -59,16 +62,17 @@ public class ExampleMonoBehaviour : MonoBehaviour
 
     void Start()
     {
+
         domain = CreateDomain();
-        if (HTNPlanner.CreatePlan(domain))
-            runner = new PlanRunner(domain);
+        if (HTNPlanner.CreatePlan(domain, worldState, plan))
+            runner = new PlanRunner(plan);
     }
 
     void Update()
     {
-        if (runner != null && domain.planState == PlanState.InProgress || domain.planState == PlanState.Waiting)
+        if (runner != null && runner.PlanState == PlanState.InProgress || runner.PlanState == PlanState.Waiting)
         {
-            domain.planState = runner.Execute();
+            runner.Execute(worldState);
         }
     }
 }

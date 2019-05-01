@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace AIPlanner
 {
@@ -8,7 +9,7 @@ namespace AIPlanner
         public StateVariable variable;
         public System.Func<StateVariable, bool> fn;
 
-        public bool IsTrue(StateVariable[] state)
+        public bool IsTrue(List<StateVariable> state)
         {
             return fn(state[variable.index]);
         }

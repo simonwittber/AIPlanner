@@ -8,7 +8,6 @@ namespace AIPlanner
     /// A primitive task is an action that is executed if preconditions are 
     /// satisfied. It then applies it's effects to the world state.
     /// </summary>
-    [System.Serializable]
     public class PrimitiveTask : Task
     {
         internal Domain domain;
@@ -28,12 +27,13 @@ namespace AIPlanner
             return this;
         }
 
-        public bool ConditionsAreValid(StateVariable[] state)
+        public bool ConditionsAreValid(List<StateVariable> state)
         {
-            foreach (var i in conditions)
-            {
-                if (!i.IsTrue(state)) return false;
-            }
+            if (conditions != null)
+                foreach (var i in conditions)
+                {
+                    if (!i.IsTrue(state)) return false;
+                }
             return true;
         }
 
@@ -43,13 +43,14 @@ namespace AIPlanner
         public PrimitiveTask Actions(ActionDelegate fn)
         {
             action = fn;
+            name = string.IsNullOrEmpty(fn.Method.Name) ? fn.ToString() : fn.Method.Name;
             return this;
         }
 
         /// <summary>
         /// When the task succeeds, this state variable will be set to true.
         /// </summary>
-        public PrimitiveTask Set(params Effect[] effects)
+        public PrimitiveTask Effects(params Effect[] effects)
         {
             if (this.effects == null) this.effects = new List<Effect>(effects.Length);
             this.effects.AddRange(effects);
@@ -65,7 +66,7 @@ namespace AIPlanner
             return this;
         }
 
-        public void ApplyEffects(StateVariable[] state)
+        public void ApplyEffects(List<StateVariable> state)
         {
 
         }
