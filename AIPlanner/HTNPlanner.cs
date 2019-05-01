@@ -10,19 +10,28 @@ namespace AIPlanner
     /// Planner is a static class used to create a plan (List of tasks) in a 
     /// domain.
     /// </summary>
-    public static partial class HTNPlanner
+    public partial class HTNPlanner
     {
-        [ThreadStatic] static Stack<PlannerState> history;
-        [ThreadStatic] static List<Task> taskQueue;
-        [ThreadStatic] static List<StateVariable> states;
-        struct PlannerState
+        Stack<PlannerState> history;
+        List<Task> taskQueue;
+        List<StateVariable> states;
+
+        class PlannerState
         {
-            public List<float> state;
-            public List<PrimitiveTask> plan;
-            public List<Task> queue;
+            public List<float> state = new List<float>();
+            public List<PrimitiveTask> plan = new List<PrimitiveTask>();
+            public List<Task> queue = new List<Task>();
+
+            public void Clear()
+            {
+                state.Clear();
+                plan.Clear();
+                queue.Clear();
+            }
         }
 
-        static object me = new object();
+        Stack<PlannerState> plannerStatePool = new Stack<PlannerState>();
+
 
         /// <summary>
         /// Creates the plan based on current world state. A plan is a list of
@@ -31,68 +40,77 @@ namespace AIPlanner
         /// <returns>The plan.</returns>
         /// <param name="currentState">Current state.</param>
         /// <param name="domain">Domain.</param>
-        static public bool CreatePlan(Domain domain, List<StateVariable> worldState, Plan plan)
+        public bool CreatePlan(Domain domain, List<StateVariable> worldState, Plan plan)
         {
-            lock (me)
+            var result = _CreatePlan(domain, worldState, plan);
+            foreach (var i in history)
             {
-                plan.Clear();
-                if (history == null) history = new Stack<PlannerState>();
-                if (taskQueue == null) taskQueue = new List<Task>();
-                if (states == null) states = new List<StateVariable>();
-                states.Clear();
-                taskQueue.Clear();
-                history.Clear();
-                taskQueue.Add(domain.root);
+                i.Clear();
+                plannerStatePool.Push(i);
+            }
+            history.Clear();
+            return result;
+        }
 
-                states.AddRange(worldState);
 
-                while (taskQueue.Count > 0)
+        bool _CreatePlan(Domain domain, List<StateVariable> worldState, Plan plan)
+        {
+            plan.Clear();
+            if (history == null) history = new Stack<PlannerState>();
+            if (taskQueue == null) taskQueue = new List<Task>();
+            if (states == null) states = new List<StateVariable>();
+            states.Clear();
+            taskQueue.Clear();
+            history.Clear();
+            taskQueue.Add(domain.root);
+
+            states.AddRange(worldState);
+
+            while (taskQueue.Count > 0)
+            {
+                var task = taskQueue[0];
+                taskQueue.RemoveAt(0);
+                if (task is CompoundTask)
                 {
-                    var task = taskQueue[0];
-                    taskQueue.RemoveAt(0);
-                    if (task is CompoundTask)
+                    var compoundTask = task as CompoundTask;
+                    var method = compoundTask.FindSatisfiedMethod(states);
+                    if (method != null)
                     {
-                        var compoundTask = task as CompoundTask;
-                        var method = compoundTask.FindSatisfiedMethod(states);
-                        if (method != null)
+                        SaveHistory(taskQueue, plan, states);
+                        foreach (var i in method.tasks)
                         {
-                            SaveHistory(taskQueue, plan, states);
-                            foreach (var i in method.tasks)
-                            {
-                                taskQueue.Add(domain.tasks[i.name]);
-                            }
-                        }
-                        else
-                        {
-                            if (!RestoreHistory(taskQueue, plan, states))
-                            {
-                                return false;
-                            }
+                            taskQueue.Add(domain.tasks[i.name]);
                         }
                     }
                     else
                     {
-                        var primitiveTask = task as PrimitiveTask;
-                        if (primitiveTask.ConditionsAreValid(states))
+                        if (!RestoreHistory(taskQueue, plan, states))
                         {
-                            primitiveTask.ApplyEffects(states);
-                            plan.Add(primitiveTask);
-                        }
-                        else
-                        {
-                            if (!RestoreHistory(taskQueue, plan, states))
-                            {
-                                return false;
-                            }
+                            return false;
                         }
                     }
                 }
-                history.Clear();
-                return true;
+                else
+                {
+                    var primitiveTask = task as PrimitiveTask;
+                    if (primitiveTask.ConditionsAreValid(states))
+                    {
+                        primitiveTask.ApplyEffects(states);
+                        plan.Add(primitiveTask);
+                    }
+                    else
+                    {
+                        if (!RestoreHistory(taskQueue, plan, states))
+                        {
+                            return false;
+                        }
+                    }
+                }
             }
+            return true;
         }
 
-        static bool RestoreHistory(List<Task> taskQueue, List<PrimitiveTask> plan, List<StateVariable> state)
+        bool RestoreHistory(List<Task> taskQueue, List<PrimitiveTask> plan, List<StateVariable> state)
         {
             if (history.Count == 0) return false;
             var h = history.Pop();
@@ -102,24 +120,24 @@ namespace AIPlanner
             plan.AddRange(h.plan);
             for (var i = 0; i < state.Count; i++)
                 state[i].value = h.state[i];
-            ListPool<Task>.Return(h.queue);
-            ListPool<PrimitiveTask>.Return(h.plan);
-            ListPool<float>.Return(h.state);
+
+            h.Clear();
+            plannerStatePool.Push(h);
             return true;
         }
 
-        static void SaveHistory(List<Task> taskQueue, List<PrimitiveTask> plan, List<StateVariable> state)
+        void SaveHistory(List<Task> taskQueue, List<PrimitiveTask> plan, List<StateVariable> state)
         {
-            var ps = new PlannerState
-            {
-                queue = ListPool<Task>.Take(taskQueue),
-                plan = ListPool<PrimitiveTask>.Take(plan),
-                state = ListPool<float>.Take()
-            };
+            PlannerState ps;
+            if (plannerStatePool.Count > 0)
+                ps = plannerStatePool.Pop();
+            else
+                ps = new PlannerState();
+
+            ps.queue.AddRange(taskQueue);
+            ps.plan.AddRange(plan);
             foreach (var i in state)
-            {
                 ps.state.Add(i.value);
-            }
             history.Push(ps);
         }
     }

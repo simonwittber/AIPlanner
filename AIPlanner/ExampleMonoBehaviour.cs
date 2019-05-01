@@ -64,8 +64,8 @@ public class ExampleMonoBehaviour : MonoBehaviour
     {
 
         domain = CreateDomain();
-        if (HTNPlanner.CreatePlan(domain, worldState, plan))
-            runner = new PlanRunner(plan);
+        // if (HTNPlanner.CreatePlan(domain, worldState, plan))
+        //     runner = new PlanRunner(plan);
     }
 
     void Update()
