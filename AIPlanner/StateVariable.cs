@@ -1,5 +1,8 @@
 using System;
 using System.Collections.Generic;
+using LiteSpace;
+using Surrogates;
+using UnityEngine;
 
 namespace AIPlanner
 {
@@ -8,6 +11,7 @@ namespace AIPlanner
     {
         public float value;
         public int index;
+        ISurrogateProperty<float> surrogate;
 
         public static Condition operator <=(StateVariable x, int y) => new Condition() { variable = x, fn = (z) => z.value <= y };
         public static Condition operator >=(StateVariable x, int y) => new Condition() { variable = x, fn = (z) => z.value >= y };
@@ -17,6 +21,21 @@ namespace AIPlanner
         public static Condition operator !=(StateVariable x, int y) => new Condition() { variable = x, fn = (z) => z.value != y };
 
         public static implicit operator float(StateVariable d) => d.value;
+
+        public void ConnectTo(Component component, string fieldName)
+        {
+            var isProperty = component.GetType().GetProperty(fieldName) != null;
+            if (isProperty)
+                surrogate = SurrogateRegister.GetSurrogateProperty<float>(component, fieldName);
+            else
+                surrogate = SurrogateRegister.GetSurrogateField<float>(component, fieldName);
+        }
+
+        public void Sync()
+        {
+            if (surrogate != null)
+                value = surrogate.Get();
+        }
 
         public static Effect operator -(StateVariable x, int y) => new Effect() { variable = x, fn = (z) => z.value -= y };
         public static Effect operator +(StateVariable x, int y) => new Effect() { variable = x, fn = (z) => z.value += y };
